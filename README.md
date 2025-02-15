@@ -5,7 +5,7 @@
 
 Сборка:
 Установить зависимости: composer install
-Настройка окружения: .env DATABASE_URL=
+Настройка окружения: .env DATABASE_URL="mysql://user:password@127.0.0.1:3306/your_database_name?
 Применение миграций: php bin/console doctrine:migrations:migrate
 Применение фикстур: php bin/console doctrine:fixtures:load
 Запуск: symfony server:start
