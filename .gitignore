@@ -1,4 +1,3 @@
-
 ###> symfony/framework-bundle ###
 /.env.local
 /.env.local.php
@@ -7,7 +6,7 @@
 /public/bundles/
 /var/
 /vendor/
-.idea
+/.idea
 ###< symfony/framework-bundle ###
 
 ###> phpunit/phpunit ###
@@ -15,12 +14,43 @@
 .phpunit.result.cache
 ###< phpunit/phpunit ###
 
-###> symfony/phpunit-bridge ###
-.phpunit.result.cache
-/phpunit.xml
-###< symfony/phpunit-bridge ###
-
 ###> symfony/asset-mapper ###
 /public/assets/
 /assets/vendor/
 ###< symfony/asset-mapper ###
+
+# Symfony related
+/.env
+/.env.prod.local
+/.env.test.local
+/var/cache/*
+/var/log/*
+/var/sessions/*
+/var/storage/*
+/var/tmp/*
+/config/secrets/*
+/config/jwt/*
+/config/packages/dev/*
+/config/packages/test/*
+/config/packages/prod/*
+/public/bundles/*
+/public/assets/*
+/node_modules/
+npm-debug.log
+yarn-error.log
+
+# IDEs and editor-related
+/.idea
+/.vscode
+*.swp
+
+# Composer related
+/composer.phar
+
+# PHPUnit cache
+/.phpunit.result.cache
+/.phpunit.cache
+
+# Symfony app build files
+/public/build/*
+/var/*
