@@ -1,0 +1,172 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Exchange Rate History{% endblock %}
+
+{% block body %}
+    <h1>Cryptocurrency Exchange Rate History</h1>
+
+    <form id="history-form">
+        <label for="pair">Currency:</label>
+        <select name="pair" id="pair">
+            <option value="BTC" selected>BTC</option>
+            <option value="ETH">ETH</option>
+            <option value="LTC">LTC</option>
+        </select>
+        <br>
+
+        <label for="from">From:</label>
+        <input type="date" name="from" id="from" required>
+        <br>
+
+        <label for="to">To:</label>
+        <input type="date" name="to" id="to" required>
+        <br>
+
+        <button type="submit">Get History</button>
+    </form>
+
+    <div id="error-message" style="color: red;"></div>
+    <div id="history-result"></div>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            text-align: center;
+        }
+
+        form {
+            margin: 20px auto;
+            max-width: 400px;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        label {
+            font-size: 16px;
+            margin-right: 10px;
+        }
+
+        select, input {
+            padding: 8px;
+            font-size: 14px;
+            margin-bottom: 15px;
+            width: 100%;
+            max-width: 250px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+            width: 100%;
+            max-width: 250px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        table {
+            width: 80%;
+            margin: 20px auto;
+            border-collapse: collapse;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: center;
+            border: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #007bff;
+            color: white;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        #error-message {
+            color: red;
+            margin-top: 20px;
+        }
+    </style>
+
+    <script>
+        document.getElementById('history-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const pair = document.getElementById('pair').value;
+            const from = document.getElementById('from').value;
+            const to = document.getElementById('to').value;
+
+            document.getElementById('error-message').textContent = '';
+            document.getElementById('history-result').textContent = '';
+
+            if (!from || !to) {
+                document.getElementById('error-message').textContent = 'Please specify both "From" and "To" dates';
+                return;
+            }
+
+            const url = `/api/rates/history?currency=${pair}&from=${from}&to=${to}`;
+
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        document.getElementById('error-message').textContent = data.error;
+                    } else {
+                        const resultDiv = document.getElementById('history-result');
+                        let html = `<h2>Exchange Rate History for ${pair}</h2>
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th>Date</th>
+                                                <th>Rate USD</th>
+                                                <th>Rate EUR</th>
+                                                <th>Rate GBP</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>`;
+
+                        data.forEach(rate => {
+                            html += `<tr>
+                                         <td>${new Date(rate.date).toLocaleString()}</td>
+                                         <td>${parseFloat(rate.USD).toFixed(2)}</td>
+                                         <td>${parseFloat(rate.EUR).toFixed(2)}</td>
+                                         <td>${parseFloat(rate.GBP).toFixed(2)}</td>
+                                     </tr>`;
+                        });
+
+                        html += `</tbody></table>`;
+                        resultDiv.innerHTML = html;
+                    }
+                })
+                .catch(error => {
+                    document.getElementById('error-message').textContent = 'Error fetching data.';
+                    console.error('Request error:', error);
+                });
+        });
+    </script>
+{% endblock %}
