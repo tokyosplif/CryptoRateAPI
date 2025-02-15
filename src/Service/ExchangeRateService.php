@@ -51,7 +51,7 @@ class ExchangeRateService
                 $this->exchangeRateRepository->save($exchangeRate);
             }
         } catch (Exception $e) {
-            $this->logger->error('Ошибка при обновлении курсов валют: ' . $e->getMessage());
+            $this->logger->error('Error updating exchange rates: ' . $e->getMessage());
         }
     }
 }
