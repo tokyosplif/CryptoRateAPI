@@ -60,4 +60,4 @@ class ExchangeRateService
 
     Создание команды Symfony:
     Для того чтобы метод updateExchangeRates выполнялся регулярно, была создана команда Symfony.
-    Подключение к Cron Job не настроено.
+    Подключение к Cron Job не настроено.*/
