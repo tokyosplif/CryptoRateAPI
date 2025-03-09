@@ -150,14 +150,21 @@
                                         </thead>
                                         <tbody>`;
 
-                        data.forEach(rate => {
-                            html += `<tr>
-                                         <td>${new Date(rate.date).toLocaleString()}</td>
-                                         <td>${parseFloat(rate.USD).toFixed(2)}</td>
-                                         <td>${parseFloat(rate.EUR).toFixed(2)}</td>
-                                         <td>${parseFloat(rate.GBP).toFixed(2)}</td>
-                                     </tr>`;
-                        });
+                        if (Array.isArray(data) && data.length > 0) {
+                            data.forEach(rate => {
+                                const date = new Date(rate.date);
+                                const formattedDate = `${('0' + date.getDate()).slice(-2)}/${('0' + (date.getMonth() + 1)).slice(-2)}/${date.getFullYear()}, ${('0' + date.getHours()).slice(-2)}:${('0' + date.getMinutes()).slice(-2)}:${('0' + date.getSeconds()).slice(-2)}`;
+
+                                html += `<tr>
+                                             <td>${formattedDate}</td>
+                                             <td>${rate.USD !== undefined ? parseFloat(rate.USD).toFixed(2) : 'N/A'}</td>
+                                             <td>${rate.EUR !== undefined ? parseFloat(rate.EUR).toFixed(2) : 'N/A'}</td>
+                                             <td>${rate.GBP !== undefined ? parseFloat(rate.GBP).toFixed(2) : 'N/A'}</td>
+                                         </tr>`;
+                            });
+                        } else {
+                            html += `<tr><td colspan="4">No data available</td></tr>`;
+                        }
 
                         html += `</tbody></table>`;
                         resultDiv.innerHTML = html;
