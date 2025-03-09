@@ -2,21 +2,22 @@
 
 namespace App\Controller;
 
-use App\Repository\Interface\ExchangeRateRepositoryInterface;
+use App\Service\ExchangeRateService;
 use DateTime;
+use Exception;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 
 class ExchangeRateController extends AbstractController
 {
-    private ExchangeRateRepositoryInterface $exchangeRateRepository;
+    private ExchangeRateService $exchangeRateService;
 
-    public function __construct(ExchangeRateRepositoryInterface $exchangeRateRepository)
+    public function __construct(ExchangeRateService $exchangeRateService)
     {
-        $this->exchangeRateRepository = $exchangeRateRepository;
+        $this->exchangeRateService = $exchangeRateService;
     }
 
     #[Route('/rates', name: 'latest_rates', methods: ['GET'])]
@@ -25,22 +26,15 @@ class ExchangeRateController extends AbstractController
         return $this->render('exchange_rates/latest_rates.html.twig');
     }
 
-    #[Route('/rates/api', name: 'exchange_rates', methods: ['GET'])]
+    #[Route('/api/rates', name: 'exchange_rates', methods: ['GET'])]
     public function getLatestRates(): JsonResponse
     {
-        $rates = $this->exchangeRateRepository->findLatestRates();
-
-        $formattedRates = array_map(function ($rate) {
-            return [
-                'currencyPair' => $rate['currencyPair'],
-                'rateUSD' => $rate['rateUSD'],
-                'rateEUR' => $rate['rateEUR'],
-                'rateGBP' => $rate['rateGBP'],
-                'timestamp' => $rate['timestamp'],
-            ];
-        }, $rates);
-
-        return $this->json($formattedRates);
+        try {
+            $formattedRates = $this->exchangeRateService->getLatestRates();
+            return $this->json($formattedRates);
+        } catch (Exception $e) {
+            return $this->json(['error' => 'Failed to fetch latest rates', 'message' => $e->getMessage()], 500);
+        }
     }
 
     #[Route('/rates/history', name: 'rates_history_form', methods: ['GET'])]
@@ -60,20 +54,19 @@ class ExchangeRateController extends AbstractController
             return $this->json(['error' => 'Missing required parameters: from, to'], 400);
         }
 
-        $fromDate = new DateTime($from);
-        $toDate = new DateTime($to);
+        try {
+            $fromDate = new DateTime($from);
+            $toDate = new DateTime($to);
+        } catch (Exception) {
+            return $this->json(['error' => 'Invalid date format'], 400);
+        }
 
-        $history = $this->exchangeRateRepository->findRatesHistory($currency, $fromDate, $toDate);
-
-        $formattedHistory = array_map(function ($rate) {
-            return [
-                'date' => $rate->getTimestamp()->format('Y-m-d H:i:s'),
-                'USD' => $rate->getRateUsd(),
-                'EUR' => $rate->getRateEur(),
-                'GBP' => $rate->getRateGbp(),
-            ];
-        }, $history);
-
-        return $this->json($formattedHistory);
+        try {
+            $formattedHistory = $this->exchangeRateService->getRatesHistory($currency, $fromDate, $toDate);
+            return $this->json($formattedHistory);
+        } catch (Exception $e) {
+            return $this->json(['error' => 'Failed to fetch rates history', 'message' => $e->getMessage()], 500);
+        }
     }
 }
+
