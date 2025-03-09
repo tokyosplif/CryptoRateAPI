@@ -100,7 +100,7 @@ class ExchangeRateService
     private function saveExchangeRate(ExchangeRateDTO $rateDTO): void
     {
         $exchangeRate = new ExchangeRate();
-        $exchangeRate->setCurrencyPair($rateDTO->getCurrencyPair()); // Используем getCurrencyPair()
+        $exchangeRate->setCurrencyPair($rateDTO->getCurrencyPair()); 
 
         $exchangeRate->setRates($rateDTO->getRates());
         $exchangeRate->setTimestamp($rateDTO->getTimestamp());
@@ -110,7 +110,6 @@ class ExchangeRateService
 
 
     /**
-     * Получить последние курсы валют
      * @throws ExchangeRateException
      */
     public function getLatestRates(): array
@@ -171,10 +170,3 @@ class ExchangeRateService
         }
     }
 }
-/*   Создание команды Symfony:
-     Для того чтобы метод updateExchangeRates выполнялся регулярно,
-     была создана команда Symfony. Эта команда будет запускать логику обновления курсов валют.
-
-     Использование Cron Job или Symfony Scheduler:
-     Периодическое выполнение команды можно настроить как через Cron Job, так и через Symfony Scheduler
-     для регулярного выполнения задачи.*/
