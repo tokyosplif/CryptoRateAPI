@@ -100,7 +100,7 @@ class ExchangeRateService
     private function saveExchangeRate(ExchangeRateDTO $rateDTO): void
     {
         $exchangeRate = new ExchangeRate();
-        $exchangeRate->setCurrencyPair($rateDTO->getCurrencyPair()); 
+        $exchangeRate->setCurrencyPair($rateDTO->getCurrencyPair());
 
         $exchangeRate->setRates($rateDTO->getRates());
         $exchangeRate->setTimestamp($rateDTO->getTimestamp());
