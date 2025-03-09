@@ -7,9 +7,14 @@ use DateTime;
 
 interface ExchangeRateRepositoryInterface
 {
-    public function save(ExchangeRate $exchangeRate): void;
+    public function save(ExchangeRate $rate): void;
 
+    /**
+     * @return ExchangeRate[]
+     */
     public function findLatestRates(): array;
 
-    public function findRatesHistory(string $currencyPair, DateTime $from, DateTime $to): array;
+    public function findLatestRateBySymbol(string $symbol): ?ExchangeRate;
+
+    public function findRatesHistory(string $currency_pair, DateTime $from, DateTime $to): array;
 }
