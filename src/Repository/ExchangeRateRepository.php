@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\ExchangeRate;
+use App\Enum\CryptoCurrency;
 use App\Repository\Interface\ExchangeRateRepositoryInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use DateTime;
@@ -16,37 +17,50 @@ class ExchangeRateRepository implements ExchangeRateRepositoryInterface
         $this->entityManager = $entityManager;
     }
 
-    public function save(ExchangeRate $exchangeRate): void
+    public function save(ExchangeRate $rate): void
     {
-        $this->entityManager->persist($exchangeRate);
+        $this->entityManager->persist($rate);
         $this->entityManager->flush();
     }
 
     public function findLatestRates(): array
     {
         $query = $this->entityManager->createQuery(
-            'SELECT e.currencyPair, e.rateUSD, e.rateEUR, e.rateGBP, e.timestamp 
-         FROM App\Entity\ExchangeRate e 
-         WHERE e.currencyPair IN (:pairs)
-         ORDER BY e.timestamp DESC'
+            'SELECT e
+             FROM App\Entity\ExchangeRate e
+             WHERE e.currency_pair IN (:pairs)
+             ORDER BY e.timestamp DESC'
         )
-            ->setParameter('pairs', ['BTC', 'ETH', 'LTC'])
-            ->setMaxResults(3);
+            ->setParameter('pairs', CryptoCurrency::getAllSymbols())
+            ->setMaxResults(count(CryptoCurrency::cases()));
 
         return $query->getResult();
     }
 
-    public function findRatesHistory(string $currencyPair, DateTime $from, DateTime $to): array
+    public function findLatestRateBySymbol(string $symbol): ?ExchangeRate
     {
         return $this->entityManager->createQuery(
-            'SELECT e FROM App\Entity\ExchangeRate e 
-         WHERE e.currencyPair = :currencyPair 
-         AND e.timestamp BETWEEN :from AND :to 
-         ORDER BY e.timestamp ASC'
-        )->setParameters([
-            'currencyPair' => $currencyPair,
-            'from' => $from,
-            'to' => $to,
-        ])->getResult();
+            'SELECT e FROM App\Entity\ExchangeRate e
+             WHERE e.currency_pair = :symbol
+             ORDER BY e.timestamp DESC'
+        )
+            ->setParameter('symbol', strtoupper($symbol))
+            ->setMaxResults(1)
+            ->getOneOrNullResult();
+    }
+
+    public function findRatesHistory(string $currency_pair, DateTime $from, DateTime $to): array
+    {
+        return $this->entityManager->createQuery(
+            'SELECT e FROM App\Entity\ExchangeRate e
+             WHERE e.currency_pair = :currencyPair
+             AND e.timestamp BETWEEN :from AND :to
+             ORDER BY e.timestamp ASC'
+            )
+
+            ->setParameter('currencyPair', strtoupper($currency_pair))
+            ->setParameter('from', $from)
+            ->setParameter('to', $to)
+            ->getResult();
     }
 }
