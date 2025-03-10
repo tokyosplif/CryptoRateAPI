@@ -26,4 +26,9 @@ enum CryptoCurrency: string
     {
         return array_map(fn($case) => $case->getSymbol(), self::cases());
     }
+
+    public static function isValidCurrency(string $currency): bool
+    {
+        return in_array($currency, array_map(fn($c) => $c->value, self::cases()), true);
+    }
 }
