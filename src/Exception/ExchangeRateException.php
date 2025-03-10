@@ -43,9 +43,4 @@ class ExchangeRateException extends Exception
             $previous
         );
     }
-
-    public function getFormattedMessage(): string
-    {
-        return $this->getMessage();
-    }
 }
