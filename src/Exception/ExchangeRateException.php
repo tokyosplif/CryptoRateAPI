@@ -11,7 +11,7 @@ class ExchangeRateException extends Exception
     {
         return new self(
             sprintf('Exchange rate API error: %s', $message),
-            0,
+            $previous?->getCode() ?? 0,
             $previous
         );
     }
@@ -20,8 +20,13 @@ class ExchangeRateException extends Exception
     {
         return new self(
             sprintf('Validation error: %s', $message),
-            0,
+            $previous?->getCode() ?? 0,
             $previous
         );
     }
-} 
+
+    public function getFormattedMessage(): string
+    {
+        return $this->getMessage() . "\n" . $this->getTraceAsString();
+    }
+}
