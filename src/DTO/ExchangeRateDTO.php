@@ -22,20 +22,6 @@ class ExchangeRateDTO
         $this->timestamp = $timestamp;
     }
 
-    /**
-     * @throws ExchangeRateException
-     */
-    private function validateRates(array $rates): void
-    {
-        foreach ($rates as $currency => $rate) {
-            if (!is_numeric($rate) || $rate < 0) {
-                throw ExchangeRateException::fromValidationError(
-                    sprintf('Invalid rate value for currency %s: %s', $currency, $rate)
-                );
-            }
-        }
-    }
-
     public function getCurrencyPair(): string
     {
         return $this->currency_pair;
@@ -49,6 +35,20 @@ class ExchangeRateDTO
     public function getTimestamp(): DateTimeInterface
     {
         return $this->timestamp;
+    }
+
+    /**
+     * @throws ExchangeRateException
+     */
+    private function validateRates(array $rates): void
+    {
+        foreach ($rates as $currency => $rate) {
+            if (!is_numeric($rate) || $rate < 0) {
+                throw ExchangeRateException::fromValidationError(
+                    sprintf('Invalid rate value for currency %s: %s', $currency, $rate)
+                );
+            }
+        }
     }
 
     /**
