@@ -26,7 +26,7 @@ class ExchangeRateController extends AbstractController
         } catch (ExchangeRateException $e) {
             return $this->json([
                 'error' => 'Failed to fetch latest rates',
-                'message' => $e->getFormattedMessage(),
+                'message' => $e->getMessage(),
             ], 500);
         }
     }
@@ -62,8 +62,9 @@ class ExchangeRateController extends AbstractController
         } catch (ExchangeRateException $e) {
             return $this->json([
                 'error' => 'Failed to fetch rates history',
-                'message' => $e->getFormattedMessage(),
+                'message' => $e->getMessage(),
             ], 500);
         }
     }
 }
+
