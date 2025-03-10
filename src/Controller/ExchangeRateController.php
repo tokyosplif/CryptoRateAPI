@@ -2,6 +2,8 @@
 
 namespace App\Controller;
 
+use App\Enum\CryptoCurrency;
+use App\Exception\ExchangeRateException;
 use App\Service\ExchangeRateService;
 use DateTime;
 use Exception;
@@ -9,38 +11,24 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\Response;
 
 class ExchangeRateController extends AbstractController
 {
-    private ExchangeRateService $exchangeRateService;
-
-    public function __construct(ExchangeRateService $exchangeRateService)
-    {
-        $this->exchangeRateService = $exchangeRateService;
-    }
-
-    #[Route('/rates', name: 'latest_rates', methods: ['GET'])]
-    public function ratesForm(): Response
-    {
-        return $this->render('exchange_rates/latest_rates.html.twig');
-    }
+    public function __construct(
+        private readonly ExchangeRateService $exchangeRateService
+    ) {}
 
     #[Route('/api/rates', name: 'exchange_rates', methods: ['GET'])]
     public function getLatestRates(): JsonResponse
     {
         try {
-            $formattedRates = $this->exchangeRateService->getLatestRates();
-            return $this->json($formattedRates);
-        } catch (Exception $e) {
-            return $this->json(['error' => 'Failed to fetch latest rates', 'message' => $e->getMessage()], 500);
+            return $this->json($this->exchangeRateService->getLatestRates());
+        } catch (ExchangeRateException $e) {
+            return $this->json([
+                'error' => 'Failed to fetch latest rates',
+                'message' => $e->getFormattedMessage(),
+            ], 500);
         }
-    }
-
-    #[Route('/rates/history', name: 'rates_history_form', methods: ['GET'])]
-    public function historyForm(): Response
-    {
-        return $this->render('exchange_rates/history_form.html.twig');
     }
 
     #[Route('/api/rates/history', name: 'api_rates_history', methods: ['GET'])]
@@ -61,12 +49,21 @@ class ExchangeRateController extends AbstractController
             return $this->json(['error' => 'Invalid date format'], 400);
         }
 
+        if ($fromDate > $toDate) {
+            return $this->json(['error' => 'The "from" date cannot be later than the "to" date'], 400);
+        }
+
+        if (!in_array($currency, array_map(fn($c) => $c->value, CryptoCurrency::cases()))) {
+            return $this->json(['error' => 'Invalid currency'], 400);
+        }
+
         try {
-            $formattedHistory = $this->exchangeRateService->getRatesHistory($currency, $fromDate, $toDate);
-            return $this->json($formattedHistory);
-        } catch (Exception $e) {
-            return $this->json(['error' => 'Failed to fetch rates history', 'message' => $e->getMessage()], 500);
+            return $this->json($this->exchangeRateService->getRatesHistory($currency, $fromDate, $toDate));
+        } catch (ExchangeRateException $e) {
+            return $this->json([
+                'error' => 'Failed to fetch rates history',
+                'message' => $e->getFormattedMessage(),
+            ], 500);
         }
     }
 }
-
