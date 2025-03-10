@@ -9,7 +9,6 @@ use App\Enum\FiatCurrency;
 use App\Exception\ExchangeRateException;
 use App\Repository\Interface\ExchangeRateRepositoryInterface;
 use DateTime;
-use Exception;
 use Symfony\Contracts\HttpClient\Exception\ExceptionInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Throwable;
@@ -35,7 +34,7 @@ class ExchangeRateService
                 $this->saveExchangeRate($rateDTO);
             }
         } catch (Throwable $e) {
-            throw ExchangeRateException::fromApiError($e->getMessage(), $e);
+            throw ExchangeRateException::fromApiError('Failed to update exchange rates', $e);
         }
     }
 
@@ -87,27 +86,27 @@ class ExchangeRateService
 
             $currencyPair = $crypto->value;
             $result[] = new ExchangeRateDTO($currencyPair, $rates, $timestamp);
-
         }
 
         return $result;
     }
-
 
     /**
      * @throws ExchangeRateException
      */
     private function saveExchangeRate(ExchangeRateDTO $rateDTO): void
     {
-        $exchangeRate = new ExchangeRate();
-        $exchangeRate->setCurrencyPair($rateDTO->getCurrencyPair());
+        try {
+            $exchangeRate = new ExchangeRate();
+            $exchangeRate->setCurrencyPair($rateDTO->getCurrencyPair());
+            $exchangeRate->setRates($rateDTO->getRates());
+            $exchangeRate->setTimestamp($rateDTO->getTimestamp());
 
-        $exchangeRate->setRates($rateDTO->getRates());
-        $exchangeRate->setTimestamp($rateDTO->getTimestamp());
-
-        $this->exchangeRateRepository->save($exchangeRate);
+            $this->exchangeRateRepository->save($exchangeRate);
+        } catch (Throwable $e) {
+            throw ExchangeRateException::fromApiError('Failed to save exchange rate', $e);
+        }
     }
-
 
     /**
      * @throws ExchangeRateException
@@ -135,7 +134,7 @@ class ExchangeRateService
 
                 return $formattedData;
             }, $rates);
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
             throw ExchangeRateException::fromApiError('Failed to fetch latest rates', $e);
         }
     }
@@ -165,7 +164,7 @@ class ExchangeRateService
 
                 return $formattedData;
             }, $history);
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
             throw ExchangeRateException::fromApiError('Failed to fetch rates history', $e);
         }
     }
